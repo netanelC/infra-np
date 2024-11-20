@@ -1,0 +1,312 @@
+---
+sidebar_position: 2
+---
+
+import TOCInline from "@theme/TOCInline";
+
+# JSON Schema Tips
+
+<TOCInline toc={toc} />
+
+## Metadata
+
+You should use the `title` and `description` keywords to provide a description of the schema. This will help users understand what the schema is for.
+
+```json
+{
+  "title": "My Schema",
+  "description": "This is a schema for my app"
+}
+```
+
+## Examples
+
+You can provide examples of how the schema should be used by using the `examples` keyword.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    }
+  },
+  "examples": {
+    "name": "John Doe"
+  }
+}
+```
+
+## Comments
+
+You can use the `$comment` keyword to provide comments in the schema. This can be useful for providing additional information about the schema.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    }
+  },
+  "$comment": "This is a schema for my app"
+}
+```
+
+For more information check the relevant [JSON Schema Docs](https://json-schema.org/understanding-json-schema/reference/comments)
+
+## Default
+
+When you have a default value for a property, you can use the `default` keyword to set it. This is useful for when you want to provide a default value for a property that is not required.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "default": "John Doe"
+    }
+  }
+}
+```
+
+The value will be provided by the config even if it is not set.
+
+## Required
+
+You can use the `required` keyword to specify which properties are required in the schema.
+By default, all properties are optional.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    }
+  },
+  "required": ["name"]
+}
+```
+
+The types generated for the schema will reflect the required properties.
+
+```typescript
+type MySchema = {
+  name: string;
+};
+```
+
+## Enums
+
+You can use the `enum` keyword to specify a list of possible values for a property.
+It is not required to specify the type of the property when using `enum`, so its possible for the enum to be of different types.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "color": {
+      "enum": ["red", "green", "blue"]
+    }
+  }
+}
+```
+
+The types generated will be a union of the enum values.
+
+```typescript
+type MySchema = {
+  color: "red" | "green" | "blue";
+};
+```
+
+## Refs
+
+You can use the `$ref` keyword to reference another schema.
+The references can be either internal or external.
+
+Reference can be used to reuse schemas and keep the schema definitions clean. Even for small schemas like Id, it is a good practice to use refs.
+
+### Internal Refs
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/name"
+    }
+  },
+  "definitions": {
+    "name": {
+      "type": "string"
+    }
+  }
+}
+```
+
+### External Refs
+
+External refs are only valid to other schemas that are defined in the schemas repository. The way to reference is to use the ID of required the schema.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "https://mapcolonies.com/common/schema/v1"
+    }
+  }
+}
+```
+
+## Definitions
+
+You can use the `definitions` keyword to define reusable schemas. The definitions are not part of the validated schema, unless they are referenced.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/name"
+    }
+  },
+  "definitions": {
+    "name": {
+      "type": "string"
+    }
+  }
+}
+```
+
+## Schema Composition
+
+In many cases you will want to compose multiple schemas together. JSON Schema provides a few keywords to help with this.
+This way you can reuse schemas and keep the schema definitions clean.
+
+The classic example in our case is to extends the boilerplate schema to fit our service.
+
+For more information check the relevant [JSON Schema Docs](https://json-schema.org/understanding-json-schema/reference/combining)
+
+### AllOf
+
+The `allOf` keyword is used to combine multiple schemas together. The properties of the schemas are merged together.
+
+The following schema
+
+```json
+{
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "number"
+        }
+      }
+    }
+  ]
+}
+```
+
+Will be equivalent to the following schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "age": {
+      "type": "number"
+    }
+  }
+}
+```
+
+:::important
+
+When using `additionalProperties: false` in the schemas, the `allOf` keyword will not merge the properties together. Instead, it will require that all properties are present in the schema, Which is not possible.
+Check the [JSON Schema Docs](https://json-schema.org/understanding-json-schema/reference/object#extending) for more information.
+
+:::
+
+### OneOf
+
+The `oneOf` keyword is used to specify that only one of the schemas should be valid.
+
+The following schema
+
+```json
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "number"
+        }
+      }
+    }
+  ]
+}
+```
+
+If both properties are provided, the schema will be invalid.
+
+## Strings
+
+### Formats
+
+It is recommended to use the `format` keyword to specify the format of the string. This will help users understand what the string is for and validate accordingly.
+
+```json
+{
+  "type": "string",
+  "format": "email"
+}
+```
+
+For a full list of formats check the [ajv-formats](https://github.com/ajv-validator/ajv-formats?tab=readme-ov-file#formats) repository.
+
+### Patterns
+
+You can use the `pattern` keyword to specify a regular expression that the string should match.
+
+```json
+{
+  "type": "string",
+  "pattern": "^[a-zA-Z]+$"
+}
+```
+
+### Const
+
+You can use the `const` keyword to specify a constant value for the string.
+
+```json
+{
+  "type": "string",
+  "const": "John Doe"
+}
+```

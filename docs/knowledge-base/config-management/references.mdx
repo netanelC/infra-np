@@ -1,0 +1,74 @@
+---
+title: References
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+---
+
+One of the biggest advantages of using the configuration management system is that it allows you to manage your configurations in a more organized way.
+When creating a config instance, its possible to pass a reference to another config instance. This is useful when you want to reuse a configuration in multiple places.
+
+## How does it work
+
+When you pass a reference to another config instance, the configuration manager will parse and save the references so it can be resolved later.
+When the configuration is resolved, the configuration manager will replace the reference with the actual configuration.
+
+For the server to understand a reference it needs to include both the config name and the version of the config. It's also possible to set the version as `latest` to always get the latest version of the referenced config.
+
+When the final configuration is resolved, the referenced config will be merged with the current configuration under the same hierarchy.
+
+## Reference structure
+
+In order to use a reference, you need to pass an object with the following structure:
+
+```json
+{
+    "$ref": {
+        "configName": "requested-config",
+        "version": "latest"
+    }
+}
+```
+
+:::tip
+
+In the `config-ui` config editor, you can press `Ctrl + Space` to insert a snippet with the reference structure.
+
+:::
+
+## Example usage
+Let's say we want to create a configuration for a database connection for our app.
+We know there is already a configuration for the database connection in the `db-partial` config that is only missing the database name.
+
+```json title="db-partial"
+{
+  "ssl": {
+    "enabled": false
+  },
+  "host": "avi"
+}
+```
+
+We can create a new configuration that references the `db-partial` config and only sets the database name.
+
+```json title="db-full"
+{
+    "$ref": {
+        "configName": "db-partial",
+        "version": "latest"
+    },
+    "database": "my-db"
+}
+```
+
+The resolved configuration will be:
+
+```json
+{
+  "ssl": {
+    "enabled": false
+  },
+  "host": "avi",
+  "database": "my-db"
+}
+```

@@ -1,0 +1,387 @@
+---
+title: Zero to Hero
+sidebar_position: 1
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# From Zero to Hero
+
+Step by step guide on how to integrate the MapColonies™ Config Management system into your service.
+
+### Assumptions
+
+This guide assumes that you have an already existing service based on the [MapColonies boilerplate repo](https://github.com/MapColonies/ts-server-boilerplate), and basic knowledge of JSON Schema. If needed you can read and learn about JSON Schema in the following link: https://json-schema.org/understanding-json-schema.
+
+It is also recommended to read the [schemas package readme](https://github.com/MapColonies/schemas/blob/master/README.md).
+
+## Before we start
+In general, the implementation of the MapColonies™ Config Management system consists of the following steps:
+1. Work environment setup.
+2. Define a JSON Schema for your service configuration.
+3. Validating that the schema and the generated types are correct.
+4. Integrating the schema with your service.
+Below each step is explained in detail.
+
+## Initialize the work environment
+
+1. Clone the schemas repo into your own machine:
+
+```bash
+git clone git@github.com:MapColonies/schemas.git
+```
+
+2. Change the working directory.
+
+```bash
+cd schemas
+```
+
+3. Install the dependencies.
+
+```bash
+npm install
+```
+
+4. Create a new branch for your schema.
+
+```bash
+git branch <my-branch-name>
+```
+
+5. Open the repository in your editor (vscode for this guide).
+
+```bash
+code .
+```
+
+6. Create a file for your schema under the schemas folder.
+
+   The directory hierarchy represents the ID of the schema. For example, a common schema that handles redis configuration might be under `schemas/common/redis/v1.schema.json` and its id will be `https://mapcolonies.com/common/redis/v1`.
+
+   The file name is based on the order of the schema. If it's the first one, the name should be `v1.schema.json`, otherwise it should be the next number in order.
+
+## Creating the schema
+
+1. Start by filling all the metadata for your JSON Schema. The more metadata you fill, it will be easier to understand and use your schema.
+
+```json title="schemas/my-domain/my-schema/v1.schema.json"
+{
+  "$id": "https://mapcolonies.com/my-domain/my-schema/v1",
+  "type": "object",
+  "title": "myDomainMySchemaV1",
+  "description": "My domain's schema"
+}
+```
+
+2. Create your schema content. Use the official JSON Schema docs, [The tips page](/docs/knowledge-base/json-schema/json-schema-tips) and check other schemas in the repo for reference.
+
+```json title="schemas/my-domain/my-schema/v1.schema.json"
+{
+  "$id": "https://mapcolonies.com/my-domain/my-schema/v1",
+  "type": "object",
+  "title": "myDomainMySchemaV1",
+  "description": "My domain's schema",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The unique identifier for the entity"
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the entity"
+    },
+    "age": {
+      "type": "integer",
+      "description": "The age of the entity",
+      "x-env-value": "ENTITY_AGE"
+    },
+    "isAlive": {
+      "type": "boolean",
+      "description": "Is the entity alive",
+      "x-env-value": "ENTITY_IS_ALIVE"
+    }
+  }
+}
+```
+
+:::tip
+
+You can use `x-env-value` to enable overriding the value of a field using environment variable.
+For more information check out the relevant docs in [config](https://github.com/MapColonies/config?tab=readme-ov-file#environment-variables) and [schemas](https://github.com/MapColonies/schemas?tab=readme-ov-file#custom-schema-properties).
+
+:::
+
+3. If we want our service schema to extend the base boilerplate schema we could do this like that:
+
+```json
+{
+  "$id": "https://mapcolonies.com/my-domain/my-schema/v1",
+  "type": "object",
+  "title": "myDomainMySchemaV1",
+  "description": "My domain's schema",
+  "allOf": [
+    {
+      "$ref": "https://mapcolonies.com/common/boilerplate/v4"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "myDomain": {
+          "$ref": "#/definitions/myDomainMySchemaV1"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "myDomainMySchemaV1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique identifier for the entity"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the entity"
+        },
+        "age": {
+          "type": "integer",
+          "description": "The age of the entity",
+          "x-env-value": "ENTITY_AGE"
+        },
+        "isAlive": {
+          "type": "boolean",
+          "description": "Is the entity alive",
+          "x-env-value": "ENTITY_IS_ALIVE"
+        }
+      }
+    }
+  }
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The result is a combined object with both the boilerplate schema and our own properties.
+
+:::important
+
+When extending the boilerplate, you should check and make sure you extend the newest version. The version in this guide might be older.
+
+:::
+
+## Run validations
+
+We want to make sure that the schema are valid, therefore we need to check the schema for errors.
+To do so we can run the following command and make changes based on the feedback.
+
+```bash
+npm run validate
+```
+
+:::info
+
+To see all the validations check the following doc: https://github.com/MapColonies/schemas?tab=readme-ov-file#validations
+
+:::
+
+## Validating the types
+
+The types that the schemas package exports are automatically generated from the json schema. We want to make sure that the types are correct before we move forward. This way we can check the types and if anything is wrong go back and fix the schema.
+
+1. Build the package:
+
+```bash
+npm run build
+```
+
+2. Check that the types are as you expected. They can be found under the `build` directory under the same hierarchy as the schema.
+   For example, those are the types generated for the schema we created above extending the boilerplate schema:
+
+```typescript title="build/schemas/my-domain/my-schema/v1.schema.d.ts"
+import { typeSymbol } from '../../symbol.js';
+declare const exported: {
+    readonly [typeSymbol]: {
+        [x: string]: unknown;
+        myDomain?: {
+            [x: string]: unknown;
+            id?: string | undefined;
+            name?: string | undefined;
+            age?: number | undefined;
+            isAlive?: boolean | undefined;
+        } | undefined;
+        openapiConfig: {
+            [x: string]: unknown;
+            filePath: string;
+            basePath: string;
+            rawPath: string;
+            uiPath: string;
+        };
+        telemetry: {
+            [x: string]: unknown;
+            logger: {
+                [x: string]: unknown;
+                level: "info" | "trace" | "debug" | "warn" | "error" | "fatal";
+                prettyPrint: boolean;
+            };
+            shared: {
+                [x: string]: unknown;
+                serviceName?: string | undefined;
+                serviceVersion?: string | undefined;
+                hostname?: string | undefined;
+            };
+            tracing: {
+                [x: string]: unknown;
+                debug?: boolean | undefined;
+                url?: string | undefined;
+                traceRatio?: number | undefined;
+                isEnabled: boolean;
+            };
+        };
+        server: {
+            [x: string]: unknown;
+            port: number;
+            request: {
+                [x: string]: unknown;
+                payload: {
+                    [x: string]: unknown;
+                    limit: string;
+                };
+            };
+        };
+    };
+...
+```
+
+:::note
+
+The rest of the file is important for the inner working of the schemas package. You should check only the types.
+
+:::
+
+## Checking integration with your service
+
+Before merging the changes you made, we want to make sure it works with your service.
+
+1. install the development version of the schemas package into your service.
+There are multiple ways to achieve that, with some of them described below.
+
+<Tabs>
+  <TabItem value='github' label='Github'>
+    When opening a PR in the schemas repo, the latest version of your branch will be built and be available for a week.
+    1. Push your changes to the remote repository.
+    ```bash
+    git push --set-upstream origin <my-branch-name>
+    ```
+    2. Open a PR in the schemas repo.
+    3. If all the validations pass, a comment will appear with instructions and link to the package.
+    4. Insert the link into your service's `package.json` file.
+    ```json title="package.json"
+    {
+      "dependencies": {
+        "@map-colonies/schemas": <insert-generated-link>
+      }
+    }
+    ```
+    5. Install the package.
+    ```bash
+    npm install
+    ```
+  </TabItem>
+  <TabItem value='local' label='Local Path'>
+    1. Build the schemas package.
+    ```bash
+    npm run build
+    ```
+    2. Edit your service's `package.json` file with the local path to the schemas repo.
+    ```json title="package.json"
+    {
+      "dependencies": {
+        "@map-colonies/schemas": "file:../schemas"
+      }
+    }
+    ```
+    3. Install the package.
+    ```bash
+    npm install
+    ```
+    4. Now any time you rebuild the schemas package, it will be available in your service.
+    :::note
+
+    if you get ESLint or TSC errors, you should just reload it in your editor.
+
+    :::
+  </TabItem>
+  <TabItem value='pack' label='NPM Pack'>
+    1. Build the schemas package.
+    ```bash
+    npm run build
+    ```
+    2. Pack the package.
+    ```bash
+    npm pack
+    ```
+    3. Edit your service's `package.json` file with the path to the packed package.
+    ```json title="package.json"
+    {
+      "dependencies": {
+        "@map-colonies/schemas": "<path-to-packed-package>"
+      }
+    }
+    ```
+    4. Install the package.
+    ```bash
+    npm install
+    ```
+  </TabItem>
+  <TabItem value='other' label='Other Options'>
+    Other options are available, but they won't be covered in this guide. If you you want to check them out, you can read the following docs:
+    - [npm link](https://docs.npmjs.com/cli/v10/commands/npm-link)
+    - [verdaccio](https://verdaccio.org/)
+    - [npm install from git](https://docs.npmjs.com/cli/v10/commands/npm-install)
+  </TabItem>
+</Tabs>
+
+---
+
+2. Change the config in your service to use the new schema.
+
+```typescript title="src/common/config.ts"
+
+import { type ConfigInstance, config } from '@map-colonies/config';
+import { <your-new-schema>, type [your-new-schema-type] } from '@map-colonies/schemas';
+
+// Choose here the type of the config instance and import this type from the entire application
+type ConfigType = ConfigInstance<[your-new-schema-type]>;
+
+let configInstance: ConfigType | undefined;
+
+/**
+ * Initializes the configuration by fetching it from the server.
+ * This should only be called from the instrumentation file.
+ * @returns A Promise that resolves when the configuration is successfully initialized.
+ */
+async function initConfig(offlineMode?:boolean): Promise<void> {
+  configInstance = await config({
+    configName: 'boiler-config',
+    configServerUrl: 'http://localhost:8080',
+    schema: <your-new-schema>,
+    version: 'latest',
+    offlineMode: offlineMode
+  });
+}
+```
+
+3. Check that the service works as expected.
+
+## Next steps
+Now that you finished writing your schema, you can submit a PR to the schemas repo and ask for it to be reviewed.
+
+We hope this guide was helpful and you were able to integrate the MapColonies™ Config Management system into your service.
+
+If you have any questions or need help, feel free to ask for help.
+
+If you have any suggestions for this guide, please open a pull request.

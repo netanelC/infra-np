@@ -1,0 +1,73 @@
+---
+title: Pipelines
+sidebar_position: 1
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+ 
+
+## Bundler/Unbundler
+ 
+![Bundler and Unbundler](./img/bundler-unbundler.png) 
+
+### Bundler pipeline
+
+The [bundler pipeline](https://jenkins.mapcolonies.net/job/bundler/) has 1 parameter which is the `artifacts.json` file.
+
+Here's an example of the `artifacts.json` 
+
+
+```json
+{
+  "docker": {
+    "acrarolibotnonprod.azurecr.io": {
+      "3d-gateway": "v2.4.2",
+      "store-trigger": "v1.5.2"
+    },
+    "docker.io": {
+      "bitnami/redis": "7.2.3",
+      "timonwong/uwsgi-exporter": "latest"
+    }
+  },
+  "helm": {
+    "acrarolibotnonprod.azurecr.io": {
+      "gateway": "2.4.2",
+      "store-trigger": "1.5.2"
+    },
+    "https://charts.bitnami.com/bitnami": {
+      "redis": "18.5.0"
+    }
+  },
+  "git": [
+    "MapColonies/helm-charts"
+  ]
+}
+```  
+
+In order to trigger the [bundler pipeline](https://jenkins.mapcolonies.net/job/bundler/) you'll need to follow the steps below:  
+
+* Go to the bundler pipeline
+* Click on `Build with parameters`  
+![Bundler build with parameters](./img/bundler-build-with-params-1.png)
+* Click on `Choose File` and upload the `artifacts.json` from you local computer.  
+![Bundler browse artifacts file](./img/bundler-browse-file-2.png)
+* Click the Build button
+![Bundler build button](./img/bundler-build-3.png)
+* After the bundler will finish it'll send a slack message to the `<team>-notifications` channel based on the user logged in.
+![Bundler slack message](./img/bundler-slack.png)
+* Click on the download link in the slack message and download the bundle zip file which you'll use later on in the unbundler in the relevant network.
+
+
+### Unbundler pipeline
+
+In order to trigger the unbundler, open the jenkins instance in the relevant network where you want to to unbundle and click on the unbundler pipeline and follow the steps bellow.
+
+* Click on `Build with Parameters`
+* Click on `Choose file` and select the bundler zip file from your computer
+![Unbundler browse file](./img/unbundler-browse-file-1.png)
+* Click the `build` button
+* Once the bundler is done you'll be able to find all the artifacts which were in the bundle zip file in all the registries in the specific network you're working on.

@@ -1,0 +1,43 @@
+---
+title: Config Management - What Is It?
+sidebar_position: 1
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Config Management is the complete solution to manage all the configuration needs of MapColonies.
+It's intended to support the system in all stages from early development to production.
+
+
+Config management has the following parts:
+
+- [schemas](https://github.com/MapColonies/schemas) - Contains the JSON Schemas that define all the configs
+- [config-server](https://github.com/MapColonies/config-server) - Server for managing all the configurations
+- [config](https://github.com/MapColonies/config) - NPM package for using config management with your NodeJS service
+- [config-ui](https://github.com/MapColonies/config-ui) - UI for interacting with the config server
+
+
+{/* Replace this once docusaurus add support to mermaid v11 with architecture diagram */}
+![config parts relation diagram](/img/config-management/architecture.png)
+
+## Motivation
+The MapColonies™ Config Management system provides a centralized solution for managing all service configurations. 
+This system ensures a single source of truth, simplifying configuration management. 
+It also validates configurations against a JSON Schema, guaranteeing their correctness. 
+Additionally, schema validation ensures that all configurations are strongly typed, enabling seamless integration with your code.
+
+This system will also helps you handle config changes easier. If any of the config has changed, 
+instead of changing the env and redeploy all the deployment, 
+you can just rollout the pod in order to get the new config.
+
+Now you can see the [zero to hero doc](/docs/guides/config-management/zero-to-hero.mdx) and integrate this system in your service!
+
+## What's Next
+
+- **Customizable Configuration for Testing**: We'll add the ability to customize configurations specifically for testing purposes.
+- **Enhanced Observability**: We'll add improved observability features to facilitate more detailed analysis.
+- **UI Improvements**: We'll refine the user interface to enhance interaction and usability.
