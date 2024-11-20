@@ -17,7 +17,7 @@ on:
 concurrency: preview-${{ github.ref }}
 
 env:
-  BASE_URL: '/infra-portal/pr-preview/pr-${{ github.event.number }}'
+  BASE_URL: '/infra-np/pr-preview/pr-${{ github.event.number }}'
 
 jobs:
   deploy-preview:

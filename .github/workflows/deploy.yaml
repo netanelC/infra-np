@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  BASE_URL: /infra-portal/
+  BASE_URL: /infra-np/
 
 jobs:
   build:

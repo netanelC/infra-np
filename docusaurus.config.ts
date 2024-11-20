@@ -12,15 +12,15 @@ const config: Config = {
     require.resolve("docusaurus-lunr-search"),
   ],
   // Set the production url of your site here
-  url: "https://mapcolonies.github.io",
+  url: "https://netanelC.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: process.env.BASE_URL || "/infra-portal/",
+  baseUrl: process.env.BASE_URL || "/infra-np/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "MapColonies", // Usually your GitHub org/user name.
-  projectName: "infra-portal", // Usually your repo name.
+  organizationName: "netanelC", // Usually your GitHub org/user name.
+  projectName: "infra-np", // Usually your repo name.
   trailingSlash: false,
 
   onBrokenLinks: "throw",
@@ -47,7 +47,7 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/MapColonies/infra-portal/tree/master/",
+          editUrl: "https://github.com/netanelC/infra-np/tree/master/",
         },
         blog: {
           showReadingTime: true,
@@ -58,7 +58,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            "https://github.com/MapColonies/infra-portal/tree/master/docs/",
+            "https://github.com/netanelC/infra-np/tree/master/docs/",
           // Useful options to enforce blogging best practices
           onInlineTags: "warn",
           onInlineAuthors: "warn",
@@ -95,7 +95,7 @@ const config: Config = {
         },
         // { to: "/blog", label: "Blog", position: "left" },
         {
-          href: "https://github.com/MapColonies/infra-portal",
+          href: "https://github.com/netanelC/infra-np",
           label: "GitHub",
           position: "right",
         },
